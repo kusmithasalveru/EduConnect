@@ -4,8 +4,8 @@ WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Runtime image
-FROM openjdk:17-jdk-slim
+# Runtime image - using eclipse-temurin for better reliability
+FROM eclipse-temurin:17-jdk-slim
 WORKDIR /app
 COPY --from=build /app/target/educonnect-backend-1.0.0.jar app.jar
 EXPOSE 8080
