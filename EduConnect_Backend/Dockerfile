@@ -1,12 +1,7 @@
-# Multi-stage build for Spring Boot application
-FROM maven:3.8.1-openjdk-17 AS build
+# Single stage - Maven handles both build and runtime
+FROM maven:3.8.1-openjdk-17
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
-
-# Runtime image - using eclipse-temurin for better reliability
-FROM eclipse-temurin:17-jdk-slim
-WORKDIR /app
-COPY --from=build /app/target/educonnect-backend-1.0.0.jar app.jar
 EXPOSE 8080
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "target/educonnect-backend-1.0.0.jar"]
