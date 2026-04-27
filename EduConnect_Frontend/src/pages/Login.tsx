@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Lock, User } from 'lucide-react'
+import { Eye, EyeOff, Lock, User, ArrowRight, Sparkles } from 'lucide-react'
 import { useApp } from '../state/AppContext'
 import type { UserRole } from '../state/types'
+import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '../lib/utils'
 
 type Mode = 'signin' | 'signup'
 
@@ -39,139 +41,212 @@ export default function Login() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-6 animate-fade-in">
-            <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-800 overflow-hidden">
-                <div className="p-8 bg-gradient-to-r from-accent-500 to-accent-600 text-white">
-                    <h1 className="text-3xl font-bold">EduConnect</h1>
-                    <p className="text-accent-100 mt-1">Sign in to continue learning</p>
-                </div>
+        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#030014] text-foreground font-sans">
+            {/* Unique Modern Grid & Aurora Background */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full animate-blob"></div>
+                <div className="absolute top-[10%] right-[-10%] w-[40%] h-[60%] bg-purple-500/20 blur-[120px] rounded-full animate-blob animation-delay-2000"></div>
+                <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[40%] bg-emerald-500/20 blur-[120px] rounded-full animate-blob animation-delay-4000"></div>
+            </div>
 
-                <div className="p-6">
-                    <div className="flex gap-2 mb-6">
-                        {(['signin', 'signup'] as const).map((m) => (
-                            <button
-                                key={m}
-                                type="button"
-                                onClick={() => setMode(m)}
-                                className={`flex-1 py-2 rounded-lg font-semibold transition-colors text-sm ${mode === m
-                                        ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
-                                        : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700'
-                                    }`}
-                            >
-                                {m === 'signin' ? 'Sign In' : 'Sign Up'}
-                            </button>
-                        ))}
-                    </div>
+            {/* Content Container */}
+            <div className="relative z-10 w-full max-w-5xl flex flex-col lg:flex-row items-center gap-12 p-6 lg:p-12">
+                
+                {/* Left Side: Branding / Value Prop */}
+                <motion.div 
+                    initial={{ opacity: 0, x: -40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="flex-1 text-center lg:text-left space-y-6"
+                >
+                    <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-white">
+                        Elevate your <br className="hidden lg:block"/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-blue-500 animate-pulse-soft">
+                            learning journey
+                        </span>
+                    </h1>
+                    <p className="text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0">
+                        Join the next-generation platform for students and top-tier tutors. Connect, learn, and grow with advanced AI insights and a community-driven ecosystem.
+                    </p>
 
-                    <form onSubmit={onSubmit} className="space-y-4">
+                    {/* Stats / Trust indicators */}
+                    <div className="hidden lg:flex items-center gap-8 pt-8 opacity-80">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                {mode === 'signin' ? 'Email' : 'Username'}
-                            </label>
-                            <div className="relative">
-                                <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                <input
-                                    value={usernameOrEmail}
-                                    onChange={(e) => setUsernameOrEmail(e.target.value)}
-                                    placeholder={mode === 'signin' ? 'Enter your email' : 'Choose a username'}
-                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
-                                />
-                            </div>
+                            <p className="text-3xl font-bold text-foreground">10k+</p>
+                            <p className="text-sm text-muted-foreground font-medium">Active Students</p>
+                        </div>
+                        <div className="w-px h-12 bg-border"></div>
+                        <div>
+                            <p className="text-3xl font-bold text-foreground">500+</p>
+                            <p className="text-sm text-muted-foreground font-medium">Expert Tutors</p>
+                        </div>
+                        <div className="w-px h-12 bg-border"></div>
+                        <div>
+                            <p className="text-3xl font-bold text-foreground">98%</p>
+                            <p className="text-sm text-muted-foreground font-medium">Success Rate</p>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Right Side: Auth Card */}
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                    className="w-full max-w-md shrink-0"
+                >
+                    <div className="glass rounded-3xl p-8 shadow-2xl shadow-primary/10 border border-white/20 dark:border-white/10 relative overflow-hidden">
+                        {/* Decorative top gradient line */}
+                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-accent to-blue-500"></div>
+
+                        <div className="mb-8 text-center">
+                            <h2 className="text-2xl font-bold text-foreground mb-2">Welcome Back</h2>
+                            <p className="text-sm text-muted-foreground">Enter your details to access your account</p>
                         </div>
 
-                        {mode === 'signup' && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                                <div className="relative">
-                                    <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <div className="flex p-1 mb-8 bg-muted/50 rounded-xl backdrop-blur-sm border border-border/50">
+                            {(['signin', 'signup'] as const).map((m) => (
+                                <button
+                                    key={m}
+                                    type="button"
+                                    onClick={() => setMode(m)}
+                                    className={cn(
+                                        "flex-1 py-2.5 rounded-lg font-semibold transition-all text-sm relative z-10",
+                                        mode === m ? "text-foreground shadow-sm bg-background" : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                >
+                                    {m === 'signin' ? 'Sign In' : 'Sign Up'}
+                                </button>
+                            ))}
+                        </div>
+
+                        <form onSubmit={onSubmit} className="space-y-5">
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-semibold text-foreground ml-1">
+                                    {mode === 'signin' ? 'Email Address' : 'Username'}
+                                </label>
+                                <div className="relative group">
+                                    <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                     <input
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="you@example.com"
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
+                                        value={usernameOrEmail}
+                                        onChange={(e) => setUsernameOrEmail(e.target.value)}
+                                        placeholder={mode === 'signin' ? 'name@example.com' : 'Choose a username'}
+                                        className="w-full pl-10 pr-4 py-3 bg-background/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground"
                                     />
                                 </div>
                             </div>
-                        )}
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-                            <div className="relative">
-                                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                <input
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    type={showPassword ? 'text' : 'password'}
-                                    placeholder="Enter your password"
-                                    className="w-full pl-10 pr-10 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword((s) => !s)}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                >
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
+                            <AnimatePresence>
+                                {mode === 'signup' && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                        animate={{ opacity: 1, height: 'auto', marginTop: '1.25rem' }}
+                                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                        className="space-y-1.5 overflow-hidden"
+                                    >
+                                        <label className="text-sm font-semibold text-foreground ml-1">Email Address</label>
+                                        <div className="relative group">
+                                            <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                            <input
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                placeholder="name@example.com"
+                                                className="w-full pl-10 pr-4 py-3 bg-background/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground"
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-semibold text-foreground ml-1">Password</label>
+                                <div className="relative group">
+                                    <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                    <input
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        type={showPassword ? 'text' : 'password'}
+                                        placeholder="••••••••"
+                                        className="w-full pl-10 pr-12 py-3 bg-background/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword((s) => !s)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role</label>
-                            <select
-                                value={role}
-                                onChange={(e) => setRole(e.target.value as UserRole)}
-                                className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
-                            >
-                                {roles.map((r) => (
-                                    <option key={r} value={r}>
-                                        {r}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-semibold text-foreground ml-1">I am a...</label>
+                                <select
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value as UserRole)}
+                                    className="w-full px-4 py-3 bg-background/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all appearance-none cursor-pointer"
+                                    style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
+                                >
+                                    {roles.map((r) => (
+                                        <option key={r} value={r} className="bg-background text-foreground">{r}</option>
+                                    ))}
+                                </select>
+                            </div>
 
-                        <div className="flex items-center justify-between">
+                            {mode === 'signin' && (
+                                <div className="flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => setForgotVisible(true)}
+                                        className="text-sm font-medium text-primary hover:text-accent transition-colors"
+                                    >
+                                        Forgot Password?
+                                    </button>
+                                </div>
+                            )}
+
+                            <AnimatePresence>
+                                {forgotVisible && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="bg-primary/10 border border-primary/20 rounded-xl p-3 text-sm text-primary/90 flex justify-between items-center"
+                                    >
+                                        <span>Use any password for demo.</span>
+                                        <button type="button" onClick={() => setForgotVisible(false)} className="font-bold hover:text-primary">Dismiss</button>
+                                    </motion.div>
+                                )}
+                                
+                                {authError && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-sm text-destructive"
+                                    >
+                                        {authError}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             <button
-                                type="button"
-                                onClick={() => setForgotVisible(true)}
-                                className="text-sm font-semibold text-accent-600 hover:text-accent-700"
+                                type="submit"
+                                disabled={!canSubmit}
+                                className={cn(
+                                    "w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300",
+                                    canSubmit
+                                        ? "bg-foreground text-background hover:scale-[1.02] shadow-xl shadow-foreground/10"
+                                        : "bg-muted text-muted-foreground cursor-not-allowed"
+                                )}
                             >
-                                Forgot Password?
+                                {mode === 'signin' ? 'Sign In' : 'Create Account'}
+                                <ArrowRight size={18} className={cn("transition-transform duration-300", canSubmit && "group-hover:translate-x-1")} />
                             </button>
-                        </div>
-
-                        {forgotVisible && (
-                            <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 text-sm text-gray-700 dark:text-gray-300">
-                                Password reset is simulated in this demo. Use any password to {mode === 'signin' ? 'sign in' : 'sign up'}.
-                                <button
-                                    type="button"
-                                    onClick={() => setForgotVisible(false)}
-                                    className="ml-2 font-semibold text-accent-600 hover:text-accent-700"
-                                >
-                                    Dismiss
-                                </button>
-                            </div>
-                        )}
-
-                        {authError && (
-                            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                                {authError}
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={!canSubmit}
-                            className={`w-full py-3 rounded-lg font-semibold transition-all ${canSubmit
-                                    ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white hover:shadow-lg'
-                                    : 'bg-gray-200 dark:bg-slate-800 text-gray-500 cursor-not-allowed'
-                                }`}
-                        >
-                            {mode === 'signin' ? 'Sign In' : 'Create Account'}
-                        </button>
-                    </form>
-                </div>
+                        </form>
+                    </div>
+                </motion.div>
             </div>
         </div>
     )

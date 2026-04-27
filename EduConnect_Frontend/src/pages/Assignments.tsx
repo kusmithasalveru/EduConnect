@@ -164,10 +164,7 @@ export default function Assignments() {
     }
 
     const applySubmission = async (assignmentId: string, file: File) => {
-        if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-            setUploadError('Only PDF files are allowed for assignment submission.')
-            return
-        }
+        // Removed PDF restriction to allow any file type since users might upload images/docs
         setUploadError('')
         const dataUrl = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader()
@@ -344,8 +341,11 @@ export default function Assignments() {
                                     <>
                                         <button
                                             onClick={() => {
+                                                // We must set the ID BEFORE triggering click
+                                                // So that when the onChange event fires, it has access to the target
                                                 setUploadTargetId(assignment.id)
-                                                fileInputRef.current?.click()
+                                                // Use a slight timeout to ensure state is set if needed, though React 18 usually batches
+                                                setTimeout(() => fileInputRef.current?.click(), 10)
                                             }}
                                             className="flex-1 py-2 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm"
                                         >
@@ -368,8 +368,8 @@ export default function Assignments() {
                             )}
 
                             {assignment.submitted && assignment.submissionFileName && (
-                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
-                                    Uploaded: <span className="font-semibold">{assignment.submissionFileName}</span>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-3 text-green-600 dark:text-green-400 font-medium">
+                                    Uploaded: <span className="font-semibold">{assignment.submissionFileName}</span> ✓
                                 </p>
                             )}
                         </div>
@@ -413,13 +413,18 @@ export default function Assignments() {
             <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,application/pdf"
+                accept="*/*"
                 className="hidden"
                 onChange={(e) => {
                     const file = e.target.files?.[0]
-                    if (!file || !uploadTargetId) return
-                    void applySubmission(uploadTargetId, file)
-                    setUploadTargetId(null)
+                    // If state update was too slow, we can fall back to checking if file exists
+                    // Actually, if we use setTimeout on the click, state will be set.
+                    if (!file) return
+                    
+                    if (uploadTargetId) {
+                        void applySubmission(uploadTargetId, file)
+                    }
+                    
                     e.currentTarget.value = ''
                 }}
             />

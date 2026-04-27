@@ -1,13 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-    @apply transition-colors duration-200;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+
+    --accent: 262.1 83.3% 57.8%;
+    --accent-foreground: 210 40% 98%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262.1 83.3% 57.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+
+    --accent: 262.1 83.3% 57.8%;
+    --accent-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 262.1 83.3% 57.8%;
+  }
 }
 
-html {
-    @apply scroll-smooth;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground transition-colors duration-300 font-sans;
+  }
+  html {
+      @apply scroll-smooth;
+  }
 }
 
 /* Custom scrollbar */
@@ -17,13 +67,21 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-    @apply bg-gray-100 dark:bg-slate-900;
+    @apply bg-muted;
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply bg-gray-400 dark:bg-slate-600 rounded;
+    @apply bg-muted-foreground/30 rounded;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-600 dark:bg-slate-500;
+    @apply bg-muted-foreground/50;
 }
+
+/* Glassmorphism utilities */
+.glass {
+    @apply bg-white/70 dark:bg-slate-900/60 backdrop-blur-lg border border-white/40 dark:border-slate-800 shadow-sm;
+}
+.glass-hover {
+    @apply hover:bg-white/90 dark:hover:bg-slate-800/80 hover:shadow-md transition-all duration-300;
+}

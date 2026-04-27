@@ -1,5 +1,6 @@
-import { Star, Users, Clock } from 'lucide-react'
+import { Star, Users, Clock, Play } from 'lucide-react'
 import type { CourseEnrollmentStatus } from '../state/types'
+import { cn } from '../lib/utils'
 
 interface CourseCardProps {
     id: string
@@ -40,7 +41,7 @@ export default function CourseCard({
 
     const badge =
         enrollmentStatus === 'enrolled' || enrollmentStatus === 'completed'
-            ? { text: 'Enrolled', className: 'bg-green-500' }
+            ? { text: 'Enrolled', className: 'bg-green-500/90 text-white backdrop-blur-md border border-green-400/50' }
             : null
 
     const ctaLabel =
@@ -51,80 +52,100 @@ export default function CourseCard({
                 : 'Enroll Now'
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+        <div className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border/50 hover:shadow-xl hover:-translate-y-1 hover:border-primary/30 transition-all duration-300 group flex flex-col h-full">
             {/* Thumbnail */}
-            <div className="relative h-44 overflow-hidden">
+            <div className="relative h-48 overflow-hidden shrink-0">
                 <img
                     src={heroImage}
                     alt={title}
-                    className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/20 to-transparent" />
-                <div className="absolute bottom-3 left-3 rounded-lg bg-black/30 px-2 py-1 text-white text-xs backdrop-blur">
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                <div className="absolute bottom-4 left-4 rounded-xl bg-black/40 px-2.5 py-1 text-white text-xs font-semibold backdrop-blur-md border border-white/10">
                     {thumbnail}
                 </div>
                 {badge && (
-                    <div className={`absolute top-3 right-3 ${badge.className} text-white px-3 py-1 rounded-full text-xs font-semibold`}>
+                    <div className={`absolute top-4 right-4 ${badge.className} px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
                         {badge.text}
+                    </div>
+                )}
+                
+                {/* Play Button Overlay (Visible on Hover) */}
+                {isEnrolled && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <button 
+                            onClick={() => onOpenCourse?.(id)}
+                            className="w-14 h-14 rounded-full bg-primary/90 text-white flex items-center justify-center pl-1 backdrop-blur-md shadow-xl transform hover:scale-110 transition-transform"
+                        >
+                            <Play size={24} className="fill-white" />
+                        </button>
                     </div>
                 )}
             </div>
 
             {/* Content */}
-            <div className="p-4">
-                <h3 className="font-bold text-gray-900 dark:text-white line-clamp-2 mb-2">{title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{instructor}</p>
+            <div className="p-5 flex flex-col flex-1">
+                <h3 className="font-bold text-lg text-foreground line-clamp-2 mb-1 group-hover:text-primary transition-colors">{title}</h3>
+                <p className="text-sm text-muted-foreground font-medium mb-3">{instructor}</p>
+                
                 {channelName && (
                     <div className="mb-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                             Community: #{channelName}
                         </span>
                     </div>
                 )}
 
-                {/* Rating */}
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="flex items-center gap-1">
-                        <Star size={16} className="fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold text-sm text-gray-900 dark:text-white">{rating.toFixed(1)}</span>
+                <div className="mt-auto">
+                    {/* Rating */}
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded text-yellow-600 dark:text-yellow-400">
+                            <Star size={14} className="fill-current" />
+                            <span className="font-bold text-xs">{rating.toFixed(1)}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground font-medium">({reviews} reviews)</span>
                     </div>
-                    <span className="text-xs text-gray-600 dark:text-gray-400">({reviews} reviews)</span>
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-4 mb-5 text-xs text-muted-foreground font-medium">
+                        <div className="flex items-center gap-1.5">
+                            <Users size={14} />
+                            <span>{students.toLocaleString()}</span>
+                        </div>
+                        <div className="w-1 h-1 rounded-full bg-border"></div>
+                        <div className="flex items-center gap-1.5">
+                            <Clock size={14} />
+                            <span>{duration}h</span>
+                        </div>
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="flex flex-col gap-2">
+                        <button
+                            onClick={() => {
+                                if (enrollmentStatus === 'none') onEnroll?.(id)
+                                else onOpenCourse?.(id)
+                            }}
+                            className={cn(
+                                "w-full py-2.5 rounded-xl font-bold transition-all duration-300 text-sm flex items-center justify-center",
+                                isEnrolled
+                                    ? "bg-muted text-foreground hover:bg-muted/80 border border-border"
+                                    : "bg-primary text-primary-foreground hover:shadow-lg hover:shadow-primary/25 active:scale-95"
+                            )}
+                        >
+                            {ctaLabel}
+                        </button>
+
+                        {onStartDiscussion && isEnrolled && (
+                            <button
+                                onClick={() => onStartDiscussion(id)}
+                                className="w-full py-2.5 bg-background border-2 border-primary/20 text-primary rounded-xl hover:bg-primary/5 transition-colors font-bold text-sm"
+                            >
+                                Start Discussion
+                            </button>
+                        )}
+                    </div>
                 </div>
-
-                {/* Stats */}
-                <div className="space-y-2 mb-4 text-xs text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center gap-2">
-                        <Users size={14} />
-                        <span>{students.toLocaleString()} students</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Clock size={14} />
-                        <span>{duration} hours</span>
-                    </div>
-                </div>
-
-                {/* Button */}
-                <button
-                    onClick={() => {
-                        if (enrollmentStatus === 'none') onEnroll?.(id)
-                        else onOpenCourse?.(id)
-                    }}
-                    className={`w-full py-2 rounded-lg font-semibold transition-all duration-200 text-sm ${isEnrolled
-                            ? 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
-                            : 'bg-gradient-to-r from-accent-500 to-accent-600 text-white hover:shadow-lg'
-                        }`}
-                >
-                    {ctaLabel}
-                </button>
-
-                {onStartDiscussion && isEnrolled && (
-                    <button
-                        onClick={() => onStartDiscussion(id)}
-                        className="w-full mt-2 py-2 border-2 border-accent-600 text-accent-600 dark:text-accent-400 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-900 transition-colors font-semibold text-sm"
-                    >
-                        Start a Discussion
-                    </button>
-                )}
             </div>
         </div>
     )

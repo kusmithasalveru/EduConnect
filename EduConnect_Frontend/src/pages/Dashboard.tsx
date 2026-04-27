@@ -1,10 +1,12 @@
-import { Zap, Clock, BookOpen, TrendingUp, Flame, Target, Sparkles } from 'lucide-react'
+import { Zap, Clock, BookOpen, TrendingUp, Flame, Target, Sparkles, Search as SearchIcon, ArrowRight } from 'lucide-react'
 import { ProgressCard, CourseCard } from '../components'
 import { useApp } from '../state/AppContext'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { tutors } from '../data/tutors'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { cn } from '../lib/utils'
 
 export default function Dashboard() {
     const { state, actions } = useApp()
@@ -13,7 +15,7 @@ export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
-        const timer = setTimeout(() => setIsLoading(false), 600)
+        const timer = setTimeout(() => setIsLoading(false), 800)
         return () => clearTimeout(timer)
     }, [])
 
@@ -23,28 +25,28 @@ export default function Dashboard() {
             current: state.stats.learningStreak,
             maximum: 30,
             icon: <Zap className="text-white" size={24} />,
-            color: 'bg-gradient-to-r from-orange-400 to-orange-600',
+            color: 'bg-gradient-to-br from-orange-400 to-rose-500',
         },
         {
-            title: 'Courses Completed',
+            title: 'Courses Done',
             current: state.stats.coursesCompleted,
             maximum: 20,
             icon: <BookOpen className="text-white" size={24} />,
-            color: 'bg-gradient-to-r from-blue-400 to-blue-600',
+            color: 'bg-gradient-to-br from-blue-400 to-indigo-600',
         },
         {
             title: 'Tutor Sessions',
             current: state.stats.tutorSessions,
             maximum: 30,
             icon: <Clock className="text-white" size={24} />,
-            color: 'bg-gradient-to-r from-green-400 to-green-600',
+            color: 'bg-gradient-to-br from-emerald-400 to-teal-600',
         },
         {
-            title: 'Community Points',
+            title: 'Community Pts',
             current: state.stats.communityPoints,
             maximum: 1000,
             icon: <TrendingUp className="text-white" size={24} />,
-            color: 'bg-gradient-to-r from-purple-400 to-purple-600',
+            color: 'bg-gradient-to-br from-violet-400 to-purple-600',
         },
     ]
 
@@ -55,118 +57,227 @@ export default function Dashboard() {
     const searchResults = useMemo(() => {
         const q = search.trim().toLowerCase()
         if (!q) return { courses: [], tutors: [], channels: [] }
-        const courses = state.courses.filter((c) => c.title.toLowerCase().includes(q) || c.instructor.toLowerCase().includes(q)).slice(0, 6)
-        const tutorMatches = tutors.filter((t) => t.name.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q)).slice(0, 6)
-        const channels = state.channels.filter((c) => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)).slice(0, 6)
+        const courses = state.courses.filter((c) => c.title.toLowerCase().includes(q) || c.instructor.toLowerCase().includes(q)).slice(0, 4)
+        const tutorMatches = tutors.filter((t) => t.name.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q)).slice(0, 4)
+        const channels = state.channels.filter((c) => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)).slice(0, 4)
         return { courses, tutors: tutorMatches, channels }
     }, [search, state.courses, state.channels])
 
-    const weeklyProgress = [40, 58, 66, 72, 55, 80, 88]
+    const weeklyData = [
+        { name: 'Mon', value: 40 },
+        { name: 'Tue', value: 58 },
+        { name: 'Wed', value: 66 },
+        { name: 'Thu', value: 72 },
+        { name: 'Fri', value: 55 },
+        { name: 'Sat', value: 80 },
+        { name: 'Sun', value: 88 }
+    ]
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-8 animate-fade-in">
+        <div className="space-y-8 pb-12">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="xl:col-span-2 space-y-6">
-                    <div className="rounded-2xl p-8 text-white bg-gradient-to-r from-accent-600/90 to-indigo-600/90 backdrop-blur border border-white/20 shadow-xl">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                            <div>
-                                <h1 className="text-4xl font-bold mb-2">Welcome back, {state.profile?.fullName ?? state.user?.username ?? 'Learner'}!</h1>
-                                <p className="text-accent-100 text-lg">Build momentum with focused learning blocks and track every win.</p>
-                                <div className="flex gap-3 mt-5">
-                                    <button onClick={() => navigate('/courses')} className="px-5 py-2.5 rounded-lg bg-white text-accent-700 font-semibold hover:shadow-md transition-all">Explore Courses</button>
-                                    <button onClick={() => navigate('/chat')} className="px-5 py-2.5 rounded-lg border border-white/60 text-white font-semibold hover:bg-white/10 transition-all">Open Community</button>
+                
+                {/* Main Hero & Progress */}
+                <div className="xl:col-span-2 space-y-6">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        className="relative rounded-3xl p-8 overflow-hidden bg-primary shadow-2xl shadow-primary/20 border border-primary/20"
+                    >
+                        {/* Decorative Background */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-blue-600 opacity-90"></div>
+                        <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[150%] bg-white/10 blur-[80px] rounded-full transform rotate-12 pointer-events-none"></div>
+                        <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[80%] bg-black/10 blur-[80px] rounded-full pointer-events-none"></div>
+                        
+                        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
+                            <div className="lg:col-span-3">
+                                <motion.div 
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 border border-white/30 text-white text-xs font-bold mb-5 backdrop-blur-md shadow-sm"
+                                >
+                                    <Sparkles size={14} className="text-yellow-300" />
+                                    <span>Weekly Goal: 80% Completed</span>
+                                </motion.div>
+                                
+                                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4 tracking-tight">
+                                    Welcome back, <br />
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-100 to-white">
+                                        {state.profile?.fullName ?? state.user?.username ?? 'Learner'}!
+                                    </span>
+                                </h1>
+                                <p className="text-white/80 text-lg lg:text-xl font-medium max-w-lg mb-8 leading-relaxed">
+                                    You're on a <strong className="text-white">{state.stats.learningStreak} day streak</strong>. Keep up the momentum with focused learning blocks today.
+                                </p>
+                                
+                                <div className="flex flex-wrap gap-4">
+                                    <button onClick={() => navigate('/courses')} className="px-6 py-3.5 rounded-xl bg-white text-primary font-bold hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2">
+                                        Continue Learning <ArrowRight size={18} />
+                                    </button>
                                 </div>
                             </div>
-                            <div className="rounded-xl bg-white/15 p-5 backdrop-blur">
-                                <p className="text-sm text-accent-100 mb-3">Weekly Progress</p>
-                                <div className="space-y-2">
-                                    {weeklyProgress.map((value, idx) => (
-                                        <div key={idx} className="h-2.5 rounded-full bg-white/20 overflow-hidden">
-                                            <motion.div initial={{ width: 0 }} animate={{ width: `${value}%` }} transition={{ delay: idx * 0.08 }} className="h-full rounded-full bg-white/90" />
-                                        </div>
-                                    ))}
+                            
+                            <div className="lg:col-span-2 rounded-2xl bg-black/20 border border-white/10 p-5 backdrop-blur-md shadow-inner h-full flex flex-col justify-between">
+                                <div className="flex justify-between items-center mb-4">
+                                    <p className="text-sm font-semibold text-white/90">Activity Overview</p>
+                                    <span className="px-2 py-1 bg-white/20 rounded text-[10px] text-white font-bold uppercase tracking-wider">This Week</span>
+                                </div>
+                                <div className="h-[120px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={weeklyData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#ffffff" stopOpacity={0.8}/>
+                                                    <stop offset="95%" stopColor="#ffffff" stopOpacity={0}/>
+                                                </linearGradient>
+                                            </defs>
+                                            <Tooltip 
+                                                contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                                                itemStyle={{ color: '#fff' }}
+                                                cursor={{ stroke: 'rgba(255,255,255,0.2)' }}
+                                            />
+                                            <Area type="monotone" dataKey="value" stroke="#ffffff" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {progressCards.map((card) => (
-                            <div key={card.title} className="bg-white/70 dark:bg-slate-900/60 backdrop-blur rounded-xl border border-white/40 dark:border-slate-700 p-1 hover:shadow-lg transition-all">
-                                <ProgressCard title={card.title} current={card.current} maximum={card.maximum} icon={card.icon} color={card.color} />
-                            </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {progressCards.map((card, idx) => (
+                            <motion.div 
+                                key={card.title}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 + (idx * 0.1) }}
+                            >
+                                <ProgressCard {...card} />
+                            </motion.div>
                         ))}
                     </div>
-                </motion.div>
+                </div>
 
-                <motion.aside initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-                    <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur rounded-2xl border border-white/40 dark:border-slate-700 p-5 shadow-sm">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Daily streak</p>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2"><Flame className="text-orange-500" /> {state.stats.learningStreak} days</p>
-                    </div>
-                    <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur rounded-2xl border border-white/40 dark:border-slate-700 p-5 shadow-sm">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Learning progress</p>
-                        <div className="h-3 rounded-full bg-gray-200 dark:bg-slate-700 overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-accent-500 to-indigo-500 rounded-full" style={{ width: '76%' }} />
+                {/* Right Sidebar Stats */}
+                <motion.div 
+                    initial={{ opacity: 0, x: 20 }} 
+                    animate={{ opacity: 1, x: 0 }} 
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="space-y-6"
+                >
+                    {/* Search Component */}
+                    <div className="glass rounded-2xl p-6 relative overflow-visible z-20">
+                        <h2 className="text-xl font-bold text-foreground mb-4">Quick Search</h2>
+                        <div className="relative group">
+                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={18} />
+                            <input
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Courses, tutors, channels..."
+                                className="w-full pl-11 pr-4 py-3.5 bg-background border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground shadow-inner"
+                            />
                         </div>
-                        <p className="mt-2 text-sm font-semibold text-accent-600 dark:text-accent-400">76% toward weekly goal</p>
+                        
+                        <AnimatePresence>
+                            {search.trim() && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute top-[calc(100%+8px)] left-0 right-0 glass rounded-2xl p-4 border border-border/50 shadow-2xl max-h-[400px] overflow-y-auto custom-scrollbar flex flex-col gap-4"
+                                >
+                                    {searchResults.courses.length > 0 && (
+                                        <div>
+                                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">Courses</p>
+                                            {searchResults.courses.map((c) => (
+                                                <button key={c.id} onClick={() => navigate(`/courses/${c.id}`)} className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-muted/80 transition-colors">
+                                                    <p className="text-sm font-semibold text-foreground line-clamp-1">{c.title}</p>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {searchResults.tutors.length > 0 && (
+                                        <div>
+                                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">Tutors</p>
+                                            {searchResults.tutors.map((t) => (
+                                                <button key={t.id} onClick={() => navigate('/tutors')} className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-muted/80 transition-colors">
+                                                    <p className="text-sm font-semibold text-foreground line-clamp-1">{t.name}</p>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {searchResults.channels.length > 0 && (
+                                        <div>
+                                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">Channels</p>
+                                            {searchResults.channels.map((c) => (
+                                                <button key={c.id} onClick={() => navigate(`/chat?view=all&channel=${c.id}`)} className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-muted/80 transition-colors">
+                                                    <p className="text-sm font-semibold text-foreground line-clamp-1">#{c.name}</p>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {Object.values(searchResults).every(arr => arr.length === 0) && (
+                                        <p className="text-sm text-muted-foreground text-center py-4">No results found.</p>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
-                    <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-5 text-white shadow-lg">
-                        <p className="text-sm opacity-90">Motivation</p>
-                        <p className="font-bold text-lg mt-1">Small daily progress compounds into big results.</p>
+
+                    <div className="glass rounded-2xl p-6 group">
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Daily Streak</p>
+                                <p className="text-4xl font-extrabold text-foreground mt-2 flex items-center gap-3">
+                                    <span className="relative flex h-10 w-10">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-20"></span>
+                                      <span className="relative inline-flex rounded-full h-10 w-10 bg-orange-100 dark:bg-orange-900/30 items-center justify-center">
+                                          <Flame className="text-orange-500" size={24} />
+                                      </span>
+                                    </span>
+                                    {state.stats.learningStreak} <span className="text-xl text-muted-foreground font-medium">Days</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div className="h-3 rounded-full bg-muted overflow-hidden shadow-inner">
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: '76%' }}
+                                transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+                                className="h-full bg-gradient-to-r from-orange-400 to-rose-500 rounded-full relative"
+                            >
+                                <div className="absolute top-0 inset-x-0 h-full bg-white/30 blur-[2px] animate-pulse-soft"></div>
+                            </motion.div>
+                        </div>
+                        <p className="mt-3 text-sm font-bold text-orange-600 dark:text-orange-400">76% toward weekly goal</p>
                     </div>
-                </motion.aside>
+
+                    <div className="relative rounded-2xl p-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl overflow-hidden group">
+                        <div className="absolute inset-0 bg-white/5 opacity-20 mix-blend-overlay"></div>
+                        <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 blur-2xl rounded-full group-hover:bg-white/20 transition-colors duration-500"></div>
+                        <div className="relative z-10">
+                            <p className="text-sm font-bold uppercase tracking-wider opacity-80 mb-2">Quote of the Day</p>
+                            <p className="font-extrabold text-xl leading-tight">"Small daily progress compounds into massive results."</p>
+                        </div>
+                    </div>
+                </motion.div>
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 <div className="xl:col-span-2 space-y-6">
-                    <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur rounded-xl p-6 border border-white/40 dark:border-slate-700">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Search</h2>
-                        <input
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search courses, tutors, and channels..."
-                            className="w-full px-4 py-3 bg-white/90 dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
-                        />
-                        {search.trim() && (
-                            <div className="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                <div className="bg-gray-50/80 dark:bg-slate-900 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
-                                    <p className="text-sm font-bold text-gray-900 dark:text-white mb-3">Courses</p>
-                                    {searchResults.courses.map((c) => (
-                                        <button key={c.id} onClick={() => navigate(`/courses/${c.id}`)} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">{c.title}</p>
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="bg-gray-50/80 dark:bg-slate-900 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
-                                    <p className="text-sm font-bold text-gray-900 dark:text-white mb-3">Tutors</p>
-                                    {searchResults.tutors.map((t) => (
-                                        <button key={t.id} onClick={() => navigate('/tutors')} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">{t.name}</p>
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="bg-gray-50/80 dark:bg-slate-900 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
-                                    <p className="text-sm font-bold text-gray-900 dark:text-white mb-3">Channels</p>
-                                    {searchResults.channels.map((c) => (
-                                        <button key={c.id} onClick={() => navigate(`/chat?view=all&channel=${c.id}`)} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">#{c.name}</p>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
                     <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Continue Learning</h2>
-                            <a href="/courses" className="text-accent-600 hover:text-accent-700 font-semibold text-sm">View All →</a>
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-extrabold text-foreground">Continue Learning</h2>
+                            <button onClick={() => navigate('/courses')} className="text-primary hover:text-accent font-bold text-sm flex items-center gap-1 transition-colors">
+                                View All <ArrowRight size={16} />
+                            </button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {(isLoading ? [1, 2] : continueLearningCards.slice(0, 2)).map((course: any, index) =>
                                 isLoading ? (
-                                    <div key={index} className="h-64 rounded-xl bg-white/70 dark:bg-slate-800 animate-pulse border border-gray-200 dark:border-slate-700" />
+                                    <div key={index} className="h-[380px] rounded-2xl bg-muted animate-pulse border border-border/50" />
                                 ) : (
                                     <CourseCard
                                         key={course.id}
@@ -188,29 +299,50 @@ export default function Dashboard() {
                 </div>
 
                 <div className="space-y-6">
-                    <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur rounded-xl p-5 border border-white/40 dark:border-slate-700">
-                        <h3 className="font-bold text-gray-900 dark:text-white mb-4">Your Teachers</h3>
-                        <div className="space-y-3">
+                    <div className="glass rounded-2xl p-6">
+                        <h3 className="text-lg font-bold text-foreground mb-5">Your Top Instructors</h3>
+                        <div className="space-y-4">
                             {tutors.slice(0, 4).map((teacher) => (
-                                <div key={teacher.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-500 to-indigo-500 text-white flex items-center justify-center font-semibold">
+                                <div key={teacher.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-muted/60 border border-transparent hover:border-border/50 transition-all cursor-pointer group">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent text-white flex items-center justify-center font-bold shadow-md group-hover:scale-105 transition-transform">
                                         {teacher.name.split(' ').map((namePart) => namePart[0]).slice(0, 2).join('')}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{teacher.name}</p>
-                                        <p className="text-xs text-gray-600 dark:text-gray-400">{teacher.subject}</p>
+                                        <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{teacher.name}</p>
+                                        <p className="text-xs text-muted-foreground font-medium">{teacher.subject}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
+                        <button onClick={() => navigate('/tutors')} className="w-full mt-4 py-2.5 text-sm font-bold text-primary hover:bg-primary/10 rounded-xl transition-colors">
+                            Find More Tutors
+                        </button>
                     </div>
 
-                    <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur rounded-xl p-5 border border-white/40 dark:border-slate-700">
-                        <h3 className="font-bold text-gray-900 dark:text-white mb-4">Quick Stats</h3>
-                        <div className="space-y-3 text-sm">
-                            <p className="flex items-center justify-between text-gray-700 dark:text-gray-300"><span className="flex items-center gap-2"><Target size={14} /> Goals hit</span> <strong>6 / 7</strong></p>
-                            <p className="flex items-center justify-between text-gray-700 dark:text-gray-300"><span className="flex items-center gap-2"><Sparkles size={14} /> Community points</span> <strong>{state.stats.communityPoints}</strong></p>
-                            <p className="flex items-center justify-between text-gray-700 dark:text-gray-300"><span className="flex items-center gap-2"><Clock size={14} /> Upcoming sessions</span> <strong>{upcomingSessions.length}</strong></p>
+                    <div className="glass rounded-2xl p-6">
+                        <h3 className="text-lg font-bold text-foreground mb-5">Quick Overview</h3>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg"><Target size={18} /></div>
+                                    <span className="text-sm font-semibold text-foreground">Goals hit</span>
+                                </div>
+                                <strong className="text-sm font-bold">6 / 7</strong>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-purple-500/10 text-purple-500 rounded-lg"><Sparkles size={18} /></div>
+                                    <span className="text-sm font-semibold text-foreground">Community Pts</span>
+                                </div>
+                                <strong className="text-sm font-bold">{state.stats.communityPoints}</strong>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-green-500/10 text-green-500 rounded-lg"><Clock size={18} /></div>
+                                    <span className="text-sm font-semibold text-foreground">Upcoming Sessions</span>
+                                </div>
+                                <strong className="text-sm font-bold">{upcomingSessions.length}</strong>
+                            </div>
                         </div>
                     </div>
                 </div>

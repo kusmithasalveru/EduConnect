@@ -10,6 +10,8 @@ import {
     LogOut,
 } from 'lucide-react'
 import { useApp } from '../state/AppContext'
+import { motion } from 'framer-motion'
+import { cn } from '../lib/utils'
 
 const navItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -33,64 +35,75 @@ export default function Sidebar() {
         .join('')
 
     return (
-        <div className="w-64 bg-slate-50 dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 flex flex-col overflow-hidden shadow-sm">
+        <div className="w-64 flex flex-col bg-transparent">
             {/* Header */}
-            <div className="p-6 border-b border-gray-200 dark:border-slate-800">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-accent-600 to-accent-500 bg-clip-text text-transparent">
-                    EduConnect
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Learn Together</p>
+            <div className="p-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
+                        <span className="text-white font-bold text-lg leading-none">E</span>
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                            EduConnect
+                        </h1>
+                        <p className="text-xs text-muted-foreground font-medium">Learn Together</p>
+                    </div>
+                </div>
             </div>
 
             {/* Navigation Items */}
-            <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-2">
-                {navItems.map(({ path, label, icon: Icon }) => (
-                    <Link
-                        key={path}
-                        to={path}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${isActive(path)
-                                ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
-                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
-                            }`}
-                    >
-                        <Icon
-                            size={20}
-                            className={isActive(path) ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-accent-600'}
-                        />
-                        <span className="font-medium">{label}</span>
-                        {isActive(path) && <span className="ml-auto text-white">→</span>}
-                    </Link>
-                ))}
+            <nav className="flex-1 overflow-y-auto py-2 px-4 space-y-1">
+                {navItems.map(({ path, label, icon: Icon }) => {
+                    const active = isActive(path);
+                    return (
+                        <Link
+                            key={path}
+                            to={path}
+                            className={cn(
+                                "relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group font-medium text-sm",
+                                active ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                            )}
+                        >
+                            {active && (
+                                <motion.div
+                                    layoutId="sidebar-active"
+                                    className="absolute inset-0 bg-primary/10 dark:bg-primary/20 rounded-xl"
+                                    initial={false}
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                />
+                            )}
+                            <Icon
+                                size={18}
+                                className={cn("relative z-10 transition-colors", active ? "text-primary" : "text-muted-foreground group-hover:text-foreground")}
+                            />
+                            <span className="relative z-10">{label}</span>
+                        </Link>
+                    )
+                })}
             </nav>
 
             {/* Bottom Navigation */}
-            <div className="border-t border-gray-200 dark:border-slate-800 py-4 px-3 space-y-2">
+            <div className="p-4 space-y-1">
                 <Link
                     to="/profile"
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${isActive('/profile')
-                            ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
-                        }`}
+                    className={cn(
+                        "relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group font-medium text-sm",
+                        isActive('/profile') ? "text-primary font-semibold bg-primary/10 dark:bg-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
                 >
-                    <User
-                        size={20}
-                        className={isActive('/profile') ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-accent-600'}
-                    />
-                    <span className="font-medium">Profile</span>
+                    <User size={18} className={isActive('/profile') ? "text-primary" : "text-muted-foreground group-hover:text-foreground"} />
+                    <span>Profile</span>
                 </Link>
 
                 <Link
                     to="/settings"
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${isActive('/settings')
-                            ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
-                        }`}
+                    className={cn(
+                        "relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group font-medium text-sm",
+                        isActive('/settings') ? "text-primary font-semibold bg-primary/10 dark:bg-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
                 >
-                    <Settings
-                        size={20}
-                        className={isActive('/settings') ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-accent-600'}
-                    />
-                    <span className="font-medium">Settings</span>
+                    <Settings size={18} className={isActive('/settings') ? "text-primary" : "text-muted-foreground group-hover:text-foreground"} />
+                    <span>Settings</span>
                 </Link>
 
                 <button
@@ -99,24 +112,24 @@ export default function Sidebar() {
                         actions.logout()
                         navigate('/login', { replace: true })
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 >
-                    <LogOut size={20} className="text-gray-500 dark:text-gray-400 group-hover:text-accent-600" />
-                    <span className="font-medium">Logout</span>
+                    <LogOut size={18} className="text-muted-foreground group-hover:text-destructive transition-colors" />
+                    <span>Logout</span>
                 </button>
             </div>
 
             {/* User Info Card */}
-            <div className="border-t border-gray-200 dark:border-slate-800 p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center text-white font-bold text-sm">
+            <div className="p-4 mt-auto">
+                <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 border border-border/50 shadow-sm backdrop-blur-sm">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm shadow-md">
                         {initials || 'JD'}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                        <p className="text-sm font-bold text-foreground truncate">
                             {state.user?.username ?? 'John Doe'}
                         </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">{state.user?.role ?? 'Student'}</p>
+                        <p className="text-xs text-muted-foreground font-medium">{state.user?.role ?? 'Student'}</p>
                     </div>
                 </div>
             </div>
