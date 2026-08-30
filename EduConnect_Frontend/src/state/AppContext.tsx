@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { loadAppState, saveAppState } from './storage'
+import { API_BASE_URL } from '../config/api'
 import type {
     AppState,
     Channel,
@@ -247,7 +248,7 @@ type BackendCourseResponse = {
     enrolledCount: number
 }
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? 'http://localhost:8082'
+const API_BASE = API_BASE_URL
 const TOKEN_KEY = 'educonnect_jwt_token'
 
 function mapBackendRole(role: BackendAuthResponse['role']): UserRole {

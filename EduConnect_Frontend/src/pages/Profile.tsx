@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useApp } from '../state/AppContext'
 import HeatMap from '../components/HeatMap'
+import { API_BASE_URL, resolveMediaUrl } from '../config/api'
 
 export default function Profile() {
     const { state, actions } = useApp()
@@ -118,8 +119,7 @@ export default function Profile() {
 
         setIsUploadingImage(true)
         try {
-            const baseURL = (import.meta as any).env?.VITE_API_BASE_URL ?? ''
-            const response = await axios.post(`${baseURL}/api/users/upload-profile-pic`, formData, {
+            const response = await axios.post(`${API_BASE_URL}/api/users/upload-profile-pic`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             })
             const savedUrl = response.data?.profileImageUrl
@@ -149,7 +149,7 @@ export default function Profile() {
                             <div className="relative">
                                 <div className="w-32 h-32 rounded-full bg-gradient-to-br from-accent-400 to-accent-600 text-white flex items-center justify-center font-bold text-4xl border-4 border-white dark:border-slate-800 shadow-lg overflow-hidden">
                                     {profile?.profileImage ? (
-                                        <img src={profile.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                                        <img src={resolveMediaUrl(profile.profileImage)} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
                                         initials
                                     )}

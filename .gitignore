@@ -1,0 +1,28 @@
+# Environment files - never commit real secrets.
+# Explicitly re-allow the frontend's checked-in, non-secret build-time
+# config files and the example templates.
+.env
+.env.local
+.env.*.local
+!.env.example
+!**/.env.example
+!EduConnect_Frontend/.env.development
+!EduConnect_Frontend/.env.production
+
+# Backend build output (Maven)
+EduConnect_Backend/target/
+
+# Uploaded files (local dev only - see FILE_STORAGE notes in README)
+EduConnect_Backend/uploads/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript incremental build cache (machine-specific, regenerated on build)
+*.tsbuildinfo

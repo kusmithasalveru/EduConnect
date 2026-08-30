@@ -1,11 +1,12 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 /**
- * Base API URL - uses environment variables
- * Development: http://localhost:8080
- * Production: https://educonnect-backend.onrender.com
+ * Base API URL - see src/config/api.ts for the single source of truth.
+ * Development: http://localhost:8080 (default)
+ * Production: set via VITE_API_URL (see .env.production / render.yaml)
  */
-const BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080';
+const BASE_URL = API_BASE_URL;
 
 /**
  * Create axios instance with default configuration

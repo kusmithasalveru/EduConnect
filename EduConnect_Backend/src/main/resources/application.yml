@@ -3,12 +3,23 @@ server:
 
 spring:
   datasource:
+    # DB_URL/DB_USERNAME/DB_PASSWORD are only defaulted here for local
+    # development convenience (a local Postgres with the standard default
+    # credentials). Production (Render) sets these explicitly as real
+    # environment variables - see render.yaml (sync: false) - so these
+    # defaults are never used in production.
     url: ${DB_URL:jdbc:postgresql://localhost:5432/educonnect_backend}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
+      # Known trade-off for this demo/portfolio deployment: ddl-auto=update
+      # lets Hibernate auto-sync the schema instead of using a migration
+      # tool (Flyway/Liquibase). This is acceptable for a single-developer
+      # recruiter/demo project, but is NOT what a real production system
+      # would use - a real system would use versioned migrations so schema
+      # changes are reviewable and reversible.
       ddl-auto: update
     show-sql: true
     properties:
@@ -20,6 +31,11 @@ spring:
 
 app:
   jwt:
-    # Use Render environment variables in production.
-    secret: ${JWT_SECRET:bXktc3VwZXItc2VjdXJlLWp3dC1rZXktbXlzdC1iZS1hdC1sZWFzdC0zMi1ieXRlcw==}
+    # No default value on purpose. If JWT_SECRET is not set, Spring will
+    # fail to start with a clear "Could not resolve placeholder
+    # 'app.jwt.secret'" error rather than silently signing tokens with a
+    # known, publicly-committed value. Generate a real secret locally with:
+    #   openssl rand -base64 32
+    # and export it as JWT_SECRET before running the app (see .env.example).
+    secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}

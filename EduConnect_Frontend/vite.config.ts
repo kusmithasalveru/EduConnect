@@ -16,7 +16,12 @@ export default defineConfig({
     build: {
         outDir: 'dist',
         sourcemap: false,
-        minify: 'terser',
+        // Was 'terser', but the terser package isn't declared as a
+        // dependency anywhere in package.json, so `npm install && npm run
+        // build` (the exact Render build command) fails on a clean
+        // checkout. esbuild is bundled with Vite already, minifies just as
+        // effectively for this project's needs, and needs no extra install.
+        minify: 'esbuild',
         rollupOptions: {
             output: {
                 manualChunks: {

@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { Search, Bell, Moon, Sun } from 'lucide-react'
 import { useApp } from '../state/AppContext'
 import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '../lib/utils'
 
 interface NavbarProps {
     toggleTheme: () => void
