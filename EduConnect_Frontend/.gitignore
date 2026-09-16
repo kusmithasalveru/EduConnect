@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+*.tsbuildinfo
+
+# Emitted by `tsc -b` if tsconfig.node.json ever loses noEmit; vite.config.ts is the source
+vite.config.js
+vite.config.d.ts
 
 # Editor directories and files
 .vscode/*

@@ -108,7 +108,7 @@ export default function CourseView() {
 
     const issueDate = new Date().toLocaleDateString()
     const credentialId = useMemo(() => `EC-${Math.random().toString(16).slice(2, 10).toUpperCase()}`, [])
-    const verificationLink = `https://educonnect.local/verify/${credentialId}`
+    const verificationLink = `${window.location.origin}/verify/${credentialId}`
 
     const downloadCertificate = () => {
         const doc = new jsPDF({ unit: 'pt', format: 'a4' })

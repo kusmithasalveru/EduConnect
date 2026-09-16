@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { Edit, Mail, MapPin, Zap, BookOpen, Trophy, Calendar, X, Camera, Loader2, CheckCircle2 } from 'lucide-react'
 import { jsPDF } from 'jspdf'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import apiClient, { getAuthToken, toApiUrl } from '../services/api'
 import { useApp } from '../state/AppContext'
 import HeatMap from '../components/HeatMap'
 
@@ -39,7 +39,7 @@ export default function Profile() {
 
     const issueDate = new Date().toLocaleDateString()
     const credentialId = useMemo(() => `EC-${Math.random().toString(16).slice(2, 10).toUpperCase()}`, [])
-    const verificationLink = `https://educonnect.local/verify/${credentialId}`
+    const verificationLink = `${window.location.origin}/verify/${credentialId}`
 
     const stats = [
         { icon: BookOpen, label: 'Courses Completed', value: state.stats.coursesCompleted.toString(), color: 'from-blue-400 to-blue-600' },
@@ -116,21 +116,25 @@ export default function Profile() {
         const formData = new FormData()
         formData.append('file', file)
 
+        if (!getAuthToken()) {
+            // Offline/mock session: there is no backend session to upload to.
+            setUploadSuccess('Preview updated (offline)')
+            return
+        }
+
         setIsUploadingImage(true)
         try {
-            const baseURL = (import.meta as any).env?.VITE_API_BASE_URL ?? ''
-            const response = await axios.post(`${baseURL}/api/users/upload-profile-pic`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            })
+            const response = await apiClient.post<{ profileImageUrl?: string }>('/api/users/upload-profile-pic', formData)
             const savedUrl = response.data?.profileImageUrl
             if (savedUrl) {
-                actions.updateProfile({ profileImage: savedUrl })
+                // The backend returns a path relative to the API host; store it as an absolute URL.
+                actions.updateProfile({ profileImage: toApiUrl(savedUrl) })
                 setUploadSuccess('Profile image uploaded')
             } else {
                 setUploadSuccess('Preview updated')
             }
-        } catch (_error) {
-            setUploadSuccess('Preview updated (offline)')
+        } catch (error: any) {
+            setUploadError(error?.response?.data?.message ?? 'Upload failed')
         } finally {
             setIsUploadingImage(false)
         }

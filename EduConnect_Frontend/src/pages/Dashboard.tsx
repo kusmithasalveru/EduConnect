@@ -5,8 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { tutors } from '../data/tutors'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { cn } from '../lib/utils'
+import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function Dashboard() {
     const { state, actions } = useApp()

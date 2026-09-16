@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Lock, User, ArrowRight, Sparkles } from 'lucide-react'
+import { Eye, EyeOff, Lock, User, ArrowRight } from 'lucide-react'
 import { useApp } from '../state/AppContext'
 import type { UserRole } from '../state/types'
 import { motion, AnimatePresence } from 'framer-motion'

@@ -1,53 +1,68 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios'
 
 /**
- * Base API URL - uses environment variables
- * Development: http://localhost:8080
- * Production: https://educonnect-backend.onrender.com
+ * Base API URL, configured per environment through VITE_API_URL:
+ *   .env.development -> http://localhost:8080
+ *   .env.production  -> https://api.kusmithasalveru.in
  */
-const BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080';
+export const API_BASE_URL = ((import.meta.env.VITE_API_URL as string | undefined) || 'http://localhost:8080').replace(/\/+$/, '')
 
-/**
- * Create axios instance with default configuration
- */
+/** localStorage key holding the backend-issued JWT. Absent while running in offline/mock mode. */
+export const TOKEN_KEY = 'educonnect_jwt_token'
+
+/** Dispatched on window when the backend rejects the stored token, so the app can sign the user out. */
+export const UNAUTHORIZED_EVENT = 'educonnect:unauthorized'
+
+export function getAuthToken(): string | null {
+    return localStorage.getItem(TOKEN_KEY)
+}
+
+export function setAuthToken(token: string) {
+    localStorage.setItem(TOKEN_KEY, token)
+}
+
+export function clearAuthToken() {
+    localStorage.removeItem(TOKEN_KEY)
+}
+
+/** Turns a backend-relative path such as `/uploads/x.png` into an absolute URL on the API host. */
+export function toApiUrl(path: string): string {
+    if (/^(https?:|data:|blob:)/i.test(path)) return path
+    return `${API_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`
+}
+
 const apiClient: AxiosInstance = axios.create({
-    baseURL: BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    timeout: 10000,
-    withCredentials: true,
-});
+    baseURL: API_BASE_URL,
+    // Generous timeout: free-tier hosts can take up to a minute to wake the API after idle.
+    timeout: 60000,
+})
 
-/**
- * Request interceptor - Add auth token to requests
- */
-apiClient.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error: AxiosError) => {
-        return Promise.reject(error);
+/** Attach the JWT to every request when one is stored. */
+apiClient.interceptors.request.use((config) => {
+    const token = getAuthToken()
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`
     }
-);
+    return config
+})
 
 /**
- * Response interceptor - Handle authentication errors
+ * When a request that carried a token is rejected with 401, the token is expired or invalid:
+ * drop it and let the app sign the user out. Auth endpoints are excluded so a wrong password
+ * surfaces as a normal error instead.
  */
 apiClient.interceptors.response.use(
     (response) => response,
     (error: AxiosError) => {
-        if (error.response?.status === 401) {
-            // Token expired or invalid
-            localStorage.removeItem('authToken');
-            window.location.href = '/login';
+        const status = error.response?.status
+        const url = error.config?.url ?? ''
+        const sentToken = Boolean(error.config?.headers?.Authorization)
+        if (status === 401 && sentToken && !url.includes('/api/auth/')) {
+            clearAuthToken()
+            window.dispatchEvent(new Event(UNAUTHORIZED_EVENT))
         }
-        return Promise.reject(error);
-    }
-);
+        return Promise.reject(error)
+    },
+)
 
-export default apiClient;
+export default apiClient

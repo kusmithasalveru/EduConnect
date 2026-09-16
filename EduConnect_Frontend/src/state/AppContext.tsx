@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import axios from 'axios'
+import { isAxiosError } from 'axios'
+import apiClient, { UNAUTHORIZED_EVENT, clearAuthToken, getAuthToken, setAuthToken } from '../services/api'
 import { loadAppState, saveAppState } from './storage'
 import type {
     AppState,
@@ -247,9 +248,6 @@ type BackendCourseResponse = {
     enrolledCount: number
 }
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? 'http://localhost:8082'
-const TOKEN_KEY = 'educonnect_jwt_token'
-
 function mapBackendRole(role: BackendAuthResponse['role']): UserRole {
     if (role === 'MENTOR') return 'Tutor'
     if (role === 'ADMIN') return 'Admin'
@@ -281,10 +279,8 @@ function mapBackendCourses(courses: BackendCourseResponse[]): Course[] {
     )
 }
 
-async function fetchBackendCourses(token: string): Promise<Course[]> {
-    const response = await axios.get<BackendCourseResponse[]>(`${API_BASE}/api/courses`, {
-        headers: { Authorization: `Bearer ${token}` },
-    })
+async function fetchBackendCourses(): Promise<Course[]> {
+    const response = await apiClient.get<BackendCourseResponse[]>('/api/courses')
     return mapBackendCourses(response.data)
 }
 
@@ -547,44 +543,46 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 let backendCourses: Course[] = []
 
                 try {
-                    const authUrl = mode === 'signup' ? `${API_BASE}/api/auth/register` : `${API_BASE}/api/auth/login`
+                    const authUrl = mode === 'signup' ? '/api/auth/register' : '/api/auth/login'
                     const payload =
                         mode === 'signup'
                             ? { email: resolvedEmail, password, fullName: usernameOrEmail.trim(), role: mapFrontendRole(role) }
                             : { email: resolvedEmail, password }
 
-                    const authResponse = await axios.post<BackendAuthResponse>(authUrl, payload)
+                    const authResponse = await apiClient.post<BackendAuthResponse>(authUrl, payload)
                     auth = authResponse.data
-                    localStorage.setItem(TOKEN_KEY, auth.token)
+                    setAuthToken(auth.token)
 
-                    backendCourses = await fetchBackendCourses(auth.token)
+                    backendCourses = await fetchBackendCourses()
                     const isMentorOrAdmin = auth.role === 'MENTOR' || auth.role === 'ADMIN'
                     if (backendCourses.length === 0 && isMentorOrAdmin) {
                         const starterCourses = seedCourses()
                         await Promise.all(
                             starterCourses.map((course) =>
-                                axios.post(
-                                    `${API_BASE}/api/courses`,
-                                    {
-                                        title: course.title,
-                                        description: `Foundational and practical learning path for ${course.title}.`,
-                                    },
-                                    { headers: { Authorization: `Bearer ${auth.token}` } },
-                                ),
+                                apiClient.post('/api/courses', {
+                                    title: course.title,
+                                    description: `Foundational and practical learning path for ${course.title}.`,
+                                }),
                             ),
                         )
-                        backendCourses = await fetchBackendCourses(auth.token)
+                        backendCourses = await fetchBackendCourses()
                     }
                 } catch (error) {
-                    console.warn("Backend auth failed, using mock authentication.", error)
+                    // The backend answered (wrong password, duplicate email, validation...): show that to the user.
+                    if (isAxiosError(error) && error.response) {
+                        clearAuthToken()
+                        throw error
+                    }
+                    // The backend is unreachable: fall back to the offline demo session (no token stored).
+                    console.warn('Backend unreachable, using mock authentication.', error)
+                    clearAuthToken()
                     const fullName = mode === 'signup' ? usernameOrEmail.trim() : (resolvedEmail.split('@')[0] || 'Demo User')
                     auth = {
-                        token: 'mock-jwt-token',
+                        token: '',
                         fullName: fullName.charAt(0).toUpperCase() + fullName.slice(1),
                         email: resolvedEmail,
                         role: mapFrontendRole(role)
                     }
-                    localStorage.setItem(TOKEN_KEY, auth.token)
                     backendCourses = seedCourses()
                 }
 
@@ -618,7 +616,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 })
             },
             logout: () => {
-                localStorage.removeItem(TOKEN_KEY)
+                clearAuthToken()
                 setState((prev) => ({ ...prev, isAuthenticated: false, user: null, profile: null, pendingPayment: null }))
             },
 
@@ -634,11 +632,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             },
 
             startCourseEnrollment: (courseId) => {
-                const token = localStorage.getItem(TOKEN_KEY)
-                if (token && !Number.isNaN(Number(courseId))) {
-                    axios.post(`${API_BASE}/api/courses/${Number(courseId)}/enroll`, null, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }).catch(() => {
+                if (getAuthToken() && !Number.isNaN(Number(courseId))) {
+                    apiClient.post(`/api/courses/${Number(courseId)}/enroll`).catch(() => {
                         // Keep local UX responsive even if backend enrollment fails.
                     })
                 }
@@ -907,6 +902,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             },
         }
     }, [])
+
+    useEffect(() => {
+        const onUnauthorized = () => actions.logout()
+        window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized)
+        return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized)
+    }, [actions])
 
     const value: AppContextValue = useMemo(
         () => ({ state, activeChannelId, actions }),
