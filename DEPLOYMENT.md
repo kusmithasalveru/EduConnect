@@ -3,9 +3,9 @@
 Production architecture:
 
 ```
-kusmithasalveru.in       ->  Vercel   (React/Vite static build, SPA rewrite in EduConnect_Frontend/vercel.json)
-api.kusmithasalveru.in   ->  Render   (Spring Boot, Docker, EduConnect_Backend/Dockerfile, blueprint in render.yaml)
-                              Neon    (PostgreSQL, free tier)
+educonnect.kusmithasalveru.in  ->  Vercel   (React/Vite static build, SPA rewrite in EduConnect_Frontend/vercel.json)
+api.kusmithasalveru.in         ->  Render   (Spring Boot, Docker, EduConnect_Backend/Dockerfile, service educonnect-api, Singapore)
+                                    Neon    (PostgreSQL, Singapore)
 ```
 
 Pushing to `main` deploys both halves automatically (Vercel and Render watch the repo).
@@ -23,7 +23,7 @@ Pushing to `main` deploys both halves automatically (Vercel and Render watch the
 | `DB_PASSWORD` | Neon password | |
 | `JWT_SECRET` | `openssl rand -base64 48` | base64, ≥32 bytes decoded; never commit |
 | `JWT_EXPIRATION_MS` | `86400000` | 24 h |
-| `CORS_ALLOWED_ORIGINS` | `https://kusmithasalveru.in,https://www.kusmithasalveru.in` | comma-separated |
+| `CORS_ALLOWED_ORIGINS` | `https://educonnect.kusmithasalveru.in` | comma-separated if more origins are ever needed |
 | `UPLOAD_DIR` | (optional) | defaults to `/app/uploads`; ephemeral on the free plan |
 | `ALLOW_ADMIN_REGISTRATION` | (optional) | defaults to `false` in prod |
 
@@ -39,13 +39,14 @@ Without `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` or `CORS_ALLOWED_OR
 
 ## DNS (GoDaddy → kusmithasalveru.in → DNS records)
 
+EduConnect lives on two subdomains; the root domain (`@`) and `www` are not used by it and are left alone.
+
 | Type | Name | Value | Purpose |
 |---|---|---|---|
-| A | `@` | `76.76.21.21` | apex → Vercel |
-| CNAME | `www` | `cname.vercel-dns.com` | www → Vercel |
-| CNAME | `api` | `<service>.onrender.com` | API → Render (shown in Render → Settings → Custom Domains) |
+| CNAME | `educonnect` | `cname.vercel-dns.com` | frontend → Vercel (Vercel may show a project-specific `*.vercel-dns-0xx.com` target instead; either works) |
+| CNAME | `api` | `educonnect-api-8x2w.onrender.com` | API → Render service `educonnect-api` |
 
-Remove any GoDaddy "Parked" A record or forwarding rule for `@` first. Vercel and Render issue TLS certificates automatically once the records resolve.
+Vercel and Render issue TLS certificates automatically once the records resolve.
 
 ## Local development
 

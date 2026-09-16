@@ -17,7 +17,7 @@ services:
       - key: JWT_EXPIRATION_MS
         value: "86400000"
       - key: CORS_ALLOWED_ORIGINS
-        value: https://kusmithasalveru.in,https://www.kusmithasalveru.in
+        value: https://educonnect.kusmithasalveru.in
       # Secrets: entered in the Render dashboard (or via API), never committed.
       - key: DB_URL          # jdbc:postgresql://<neon-host>/<db>?sslmode=require
         sync: false
