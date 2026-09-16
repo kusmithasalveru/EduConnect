@@ -79,7 +79,7 @@ To give you a clear picture of how the application operates from end to end, her
    ```bash
    cd EduConnect_Backend
    ```
-2. Update your database credentials in the `application.properties` (or `.env` equivalents).
+2. Local defaults live in `src/main/resources/application-dev.yml` (PostgreSQL on `localhost:5432`, user/password `postgres`). Override with the `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` environment variables if yours differ.
 3. Start the Spring Boot application:
    ```bash
    mvn spring-boot:run
@@ -100,3 +100,7 @@ To give you a clear picture of how the application operates from end to end, her
    npm run dev
    ```
    *The client will start on `localhost:5173`.*
+
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the production setup (Vercel + Render + Neon), required environment variables and DNS records.

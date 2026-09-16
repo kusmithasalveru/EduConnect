@@ -1,0 +1,18 @@
+# Dependencies & build output
+node_modules/
+dist/
+target/
+
+# Runtime data
+uploads/
+*.log
+
+# Local secrets (never commit real credentials)
+.env
+.env.local
+.env.*.local
+
+# Editor / OS
+.idea/
+.DS_Store
+Thumbs.db

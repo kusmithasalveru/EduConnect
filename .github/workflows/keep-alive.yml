@@ -1,0 +1,16 @@
+# Render's free tier suspends the API after 15 minutes without traffic, and waking a JVM
+# takes 30-60 s. Pinging /health every 14 minutes keeps it warm.
+# Delete this file if the backend is moved to a paid plan.
+name: Keep API awake
+
+on:
+  schedule:
+    - cron: "*/14 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: GET /health
+        run: curl --fail --silent --show-error --max-time 90 https://api.kusmithasalveru.in/health
