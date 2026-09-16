@@ -3,12 +3,14 @@ package com.educonnect.backend.service.impl;
 import com.educonnect.backend.dto.auth.AuthResponse;
 import com.educonnect.backend.dto.auth.LoginRequest;
 import com.educonnect.backend.dto.auth.RegisterRequest;
+import com.educonnect.backend.entity.Role;
 import com.educonnect.backend.entity.User;
 import com.educonnect.backend.exception.BadRequestException;
 import com.educonnect.backend.repository.UserRepository;
 import com.educonnect.backend.security.JwtService;
 import com.educonnect.backend.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,10 +25,17 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+    /** Open ADMIN sign-up is convenient locally but must stay off on a public deployment. */
+    @Value("${app.security.allow-admin-registration:true}")
+    private boolean allowAdminRegistration;
+
     @Override
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already registered");
+        }
+        if (request.getRole() == Role.ADMIN && !allowAdminRegistration) {
+            throw new BadRequestException("Admin accounts cannot be self-registered");
         }
 
         User user = User.builder()

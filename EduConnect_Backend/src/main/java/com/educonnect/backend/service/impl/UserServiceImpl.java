@@ -8,6 +8,7 @@ import com.educonnect.backend.exception.ResourceNotFoundException;
 import com.educonnect.backend.repository.UserRepository;
 import com.educonnect.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +25,9 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    @Value("${app.upload-dir}")
+    private String uploadDir;
 
     @Override
     public UserResponse getMyProfile() {
@@ -56,11 +60,11 @@ public class UserServiceImpl implements UserService {
         String safeName = originalName.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
         String filename = UUID.randomUUID() + "-" + safeName;
 
-        Path uploadDir = Path.of("uploads", "profile-images").toAbsolutePath().normalize();
-        Path target = uploadDir.resolve(filename);
+        Path profileImageDir = Path.of(uploadDir, "profile-images").toAbsolutePath().normalize();
+        Path target = profileImageDir.resolve(filename);
 
         try {
-            Files.createDirectories(uploadDir);
+            Files.createDirectories(profileImageDir);
             Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to upload profile image", e);

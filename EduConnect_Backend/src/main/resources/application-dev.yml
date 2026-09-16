@@ -1,0 +1,19 @@
+# Local development profile (active by default).
+# Every value has a localhost fallback so `mvn spring-boot:run` works with no env vars.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/educonnect_backend}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    show-sql: true
+
+app:
+  jwt:
+    # Dev-only signing key (base64 of a fixed 56-byte string). Never used in
+    # production: application-prod.yml requires JWT_SECRET with no fallback.
+    secret: ${JWT_SECRET:ZWR1Y29ubmVjdC1sb2NhbC1kZXYtb25seS1qd3Qta2V5LW5vdC1mb3ItcHJvZHVjdGlvbi11c2U=}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*}
+  security:
+    allow-admin-registration: ${ALLOW_ADMIN_REGISTRATION:true}

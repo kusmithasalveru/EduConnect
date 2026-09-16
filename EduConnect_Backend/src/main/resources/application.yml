@@ -1,25 +1,30 @@
-server:
-  port: ${PORT:8080}
-
+# Shared configuration. Environment-specific values live in
+# application-dev.yml (default, local development) and application-prod.yml.
 spring:
+  profiles:
+    default: dev
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/educonnect_backend}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
     properties:
       hibernate:
         format_sql: true
   jackson:
     serialization:
       write-dates-as-timestamps: false
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+server:
+  port: ${PORT:8080}
 
 app:
   jwt:
-    # Use Render environment variables in production.
-    secret: ${JWT_SECRET:bXktc3VwZXItc2VjdXJlLWp3dC1rZXktbXlzdC1iZS1hdC1sZWFzdC0zMi1ieXRlcw==}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  # Directory where uploaded files (profile images) are stored. Relative paths
+  # resolve against the working directory.
+  upload-dir: ${UPLOAD_DIR:uploads}
